@@ -7,12 +7,30 @@
             [markdown.core :refer [md->html]]
             [ajax.core :refer [GET POST]]
             [links.ajax :refer [load-interceptors!]]
+            [links.ui :as ui]
             [links.events])
   (:import goog.History))
 
 (defn home-page []
-  [:div.section>div.container
-   [:h1.title "L"]])
+  (let [link-data (r/atom {})]
+    (fn []
+      [:div.section>div.container
+       [:h1.title "Links"]
+       [:div.columns>div.is-half.is-offset-one-quarter
+        [ui/input-field (ui/input-attr
+                         {:type "text"
+                          :placeholder "Link"}
+                         :link
+                         link-data)]
+        (ui/tags ["hello" "why"])
+        [ui/input-field (ui/input-attr
+                         {:type "text"
+                          :placeholder "Enter Tags(comma separated)"}
+                         :tags
+                         link-data)]
+        [ui/button {:text "Add Link"
+                    :on-click (fn [e]
+                                (print @link-data))}]]])))
 
 (def pages
   {:home #'home-page})

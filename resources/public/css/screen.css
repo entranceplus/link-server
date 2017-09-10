@@ -67,3 +67,11 @@ body {
     }
 }
 
+.some-padding {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.tag-padding {
+    margin  -right: 5px;
+}
