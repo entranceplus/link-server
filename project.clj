@@ -7,6 +7,7 @@
                  [cljs-ajax "0.7.2"]
                  [compojure "1.6.0"]
                  [conman "0.6.8"]
+                 [honeysql "0.9.1"]
                  [cprop "0.1.11"]
                  [funcool/struct "1.1.0"]
                  [luminus-immutant "0.2.3"]
@@ -18,7 +19,7 @@
                  [metosin/ring-http-response "0.9.0"]
                  [mount "0.1.11"]
                  [mysql/mysql-connector-java "6.0.5"]
-                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojure "1.9.0-alpha16"]
                  [org.clojure/clojurescript "1.9.908" :scope "provided"]
                  [org.clojure/java.jdbc "0.7.1"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -33,6 +34,7 @@
                  [ring/ring-core "1.6.2"]
                  [ring/ring-defaults "0.3.1"]
                  [secretary "1.2.3"]
+                 [buddy/buddy-auth "2.1.0"]
                  [selmer "1.11.1"]]
 
   :min-lein-version "2.0.0"
@@ -57,7 +59,7 @@
    :nrepl-port 7002
    :css-dirs ["resources/public/css"]
    :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-  
+
 
   :profiles
   {:uberjar {:omit-source true
@@ -73,8 +75,8 @@
                  :closure-warnings
                  {:externs-validation :off :non-standard-jsdoc :off}
                  :externs ["react/externs/react.js"]}}}}
-             
-             
+
+
              :aot :all
              :uberjar-name "links.jar"
              :source-paths ["env/prod/clj"]
@@ -108,9 +110,9 @@
                       :source-map true
                       :optimizations :none
                       :pretty-print true}}}}
-                  
-                  
-                  
+
+
+
                   :doo {:build "test"}
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
@@ -127,7 +129,7 @@
                       :main "links.doo-runner"
                       :optimizations :whitespace
                       :pretty-print true}}}}
-                  
+
                   }
    :profiles/dev {}
    :profiles/test {}})

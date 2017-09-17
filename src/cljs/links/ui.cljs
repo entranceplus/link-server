@@ -21,17 +21,26 @@
   (merge {:default-value (get-fn @state-atom)
           :on-change (fn [e]
                        (let [val (value e)]
-                         (print "Val " val )
                          (swap! state-atom
                                 assoc
                                 get-fn
                                 val)))}
          params))
 
+(defn input [attrs get-fn state-atom]
+  [input-field (input-attr
+                attrs
+                get-fn
+                state-atom)])
+
+(defn- tag-element [tag]
+  [:span.tag.is-info.is-medium.tag-padding tag])
+
 (defn tags
   "given a list of tags it will render a list of tags"
   [tags]
-  [:div.some-padding (map (fn [tag]
-                            [:span.tag.is-info.is-medium.tag-padding
-                             tag
-                             [:button.delete ]]) tags)])
+  [:div.some-padding
+   (->> tags
+      (filter (fn [tag]
+                (not= "" tag)))
+      (map tag-element))])

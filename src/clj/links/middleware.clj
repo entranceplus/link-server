@@ -1,19 +1,21 @@
 (ns links.middleware
-  (:require [links.env :refer [defaults]]
+  (:require [clojure.tools.logging :as log]
             [cognitect.transit :as transit]
-            [clojure.tools.logging :as log]
+            [immutant.web.middleware :refer [wrap-session]]
+            [links.auth.core :as auth]
+            [links.config :refer [env]]
+            [links.env :refer [defaults]]
             [links.layout :refer [*app-context* error-page]]
-            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
-            [ring.middleware.webjars :refer [wrap-webjars]]
             [muuntaja.core :as muuntaja]
             [muuntaja.format.transit :as transit-format]
             [muuntaja.middleware :refer [wrap-format wrap-params]]
-            [links.config :refer [env]]
+            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
+            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.flash :refer [wrap-flash]]
-            [immutant.web.middleware :refer [wrap-session]]
-            [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
-  (:import [javax.servlet ServletContext]
-           [org.joda.time ReadableInstant]))
+            [buddy.auth.middleware :refer (wrap-authentication)]
+            [ring.middleware.webjars :refer [wrap-webjars]])
+  (:import javax.servlet.ServletContext
+           org.joda.time.ReadableInstant))
 
 (defn wrap-context [handler]
   (fn [request]
@@ -84,4 +86,5 @@
             (assoc-in [:security :anti-forgery] false)
             (dissoc :session)))
       wrap-context
-      wrap-internal-error))
+      wrap-internal-error
+      (wrap-authentication auth/backend)))

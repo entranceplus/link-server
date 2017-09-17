@@ -12,23 +12,27 @@
   (:import goog.History))
 
 (defn home-page []
-  (let [link-data (r/atom {})]
+  (let [link-data (r/atom {})
+        link->seq (fn [link-data]
+                    (-> link-data
+                        :tags
+                        (clojure.string/split ",")))]
     (fn []
       [:div.section>div.container
        [:h1.title "Links"]
        [:div.columns>div.is-half.is-offset-one-quarter
-        [ui/input-field (ui/input-attr
-                         {:type "text"
-                          :placeholder "Link"}
-                         :link
-                         link-data)]
-        (ui/tags ["hello" "why"])
-        [ui/input-field (ui/input-attr
-                         {:type "text"
-                          :placeholder "Enter Tags(comma separated)"}
-                         :tags
-                         link-data)]
-        [ui/button {:text "Add Link"
+        (ui/input {:type "text"
+                   :placeholder "Link"}
+                  :link
+                  link-data)
+        [ui/tags (link->seq @link-data)]
+        (ui/input {:type "text"
+                   :placeholder "Enter Tags(comma separated)"}
+                  :tags
+                  link-data)
+        ;; [:div (map (fn [fruit]
+        ;;              [:li fruit]) (link->seq @link-data))]
+        [ui/button {:text "Add Links"
                     :on-click (fn [e]
                                 (print @link-data))}]]])))
 

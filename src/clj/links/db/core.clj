@@ -1,10 +1,12 @@
 (ns links.db.core
-  (:require
-    [clj-time.jdbc]
-    [clojure.java.jdbc :as jdbc]
-    [conman.core :as conman]
-    [links.config :refer [env]]
-    [mount.core :refer [defstate]])
+  (:require [clj-time.jdbc]
+            [clojure.java.jdbc :as jdbc]
+            [conman.core :as conman]
+            [honeysql.core :as sql]
+            [links.config :refer [env]]
+            [honeysql.core :as sql]
+            [honeysql.helpers :refer :all :as helpers]
+            [mount.core :refer [defstate]])
   (:import [java.sql
             BatchUpdateException
             PreparedStatement]))
@@ -13,6 +15,8 @@
            :start (conman/connect! {:jdbc-url (env :database-url)})
            :stop (conman/disconnect! *db*))
 
-(conman/bind-connection *db* "sql/queries.sql")
+(defn query [sqlmap]
+  (jdbc/query *db* (sql/format sqlmap)))
 
-
+(defn execute [sqlmap]
+  (jdbc/execute! *db* (sql/format sqlmap)))

@@ -1,11 +1,12 @@
 (ns links.handler
   (:require [compojure.core :refer [routes wrap-routes]]
-            [links.layout :refer [error-page]]
-            [links.routes.home :refer [home-routes]]
             [compojure.route :as route]
             [links.env :refer [defaults]]
-            [mount.core :as mount]
-            [links.middleware :as middleware]))
+            [links.layout :refer [error-page]]
+            [links.middleware :as middleware]
+            [links.routes.home :refer [home-routes]]
+            [links.auth.core :as auth]
+            [mount.core :as mount]))
 
 (mount/defstate init-app
                 :start ((or (:init defaults) identity))
@@ -15,6 +16,8 @@
   (routes
     (-> #'home-routes
         (wrap-routes middleware/wrap-csrf)
+        (wrap-routes middleware/wrap-formats))
+    (-> #'auth/auth-routes
         (wrap-routes middleware/wrap-formats))
     (route/not-found
       (:body
