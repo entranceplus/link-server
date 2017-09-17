@@ -36,9 +36,18 @@
     (throw (ex-info "User already exists"
                     {:reason "User already exists"}))))
 
+(defn handle-login [{:keys [username password] :as user}]
+  (when-let [{:keys [pass id]} (first (get-users {:username username}))]
+    (when (password/check password pass)
+      {:msg "User logged in"
+       :token (jwt-sign {:id id})})))
+
 (defroutes auth-routes
   (POST "/login" {user-info :params}
-        (util/send-response (response/ok user-info)))
+        (if-let [login-response (handle-login user-info)]
+          (util/ok-response login-response)
+          (util/send-response (response/bad-request
+                                 {:reason "Incorrect credentials"}))))
   (POST "/signup" {{:keys [username password]} :params}
         (try
           (util/ok-response (handle-signup {:username username
