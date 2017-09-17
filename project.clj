@@ -17,6 +17,7 @@
                  [markdown-clj "1.0.1"]
                  [metosin/muuntaja "0.3.2"]
                  [metosin/ring-http-response "0.9.0"]
+                 [crypto-password "0.2.0"]
                  [mount "0.1.11"]
                  [mysql/mysql-connector-java "6.0.5"]
                  [org.clojure/clojure "1.9.0-alpha16"]

@@ -6,6 +6,7 @@
             [honeysql.core :as sql]
             [honeysql.helpers :refer :all :as helpers]
             [links.db.core :as db]
+            [crypto.password.pbkdf2 :as password]
             [buddy.sign.jwt :as jwt]))
 
 (def secret "a-very-secret-string")
@@ -20,13 +21,16 @@
                 (values [user]))))
 
 (defn get-users [{:keys [username]}]
-  (db/query {:select [:id]
+  (db/query {:select [:id :pass]
              :from [:users]
              :where [:= :users.username username]}))
 
-(defn handle-signup [{:keys [id username] :as user}]
+(defn handle-signup [{:keys [username password] :as user}]
   (if  (empty? (get-users {:username username}))
-    (do (create-user user)
+    (let [id  (util/uuid)]
+      (create-user {:id id
+                    :username username
+                    :pass (password/encrypt password)})
         {:msg "User created"
          :token (jwt-sign {:id id})})
     (throw (ex-info "User already exists"
@@ -35,10 +39,9 @@
 (defroutes auth-routes
   (POST "/login" {user-info :params}
         (util/send-response (response/ok user-info)))
-  (POST "/signup" {{:keys [username password email]} :params}
+  (POST "/signup" {{:keys [username password]} :params}
         (try
-          (util/ok-response (handle-signup {:id (util/uuid)
-                                            :username username
-                                            :pass password}))
+          (util/ok-response (handle-signup {:username username
+                                            :password password}))
           (catch Exception e (util/send-response (response/bad-request
                                                   (ex-data e)))))))
