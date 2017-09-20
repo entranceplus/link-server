@@ -17,7 +17,7 @@
   (jwt/sign claims secret {:alg :hs512}))
 
 (defn create-user [user]
-  (db/execute (-> (insert-into :users)
+  (db/execute! (-> (insert-into :users)
                 (values [user]))))
 
 (defn get-users [{:keys [username]}]

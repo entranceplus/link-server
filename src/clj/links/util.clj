@@ -1,5 +1,6 @@
 (ns links.util
-  (:require [ring.util.http-response :as response]))
+  (:require [clojure.spec.alpha :as s]
+            [ring.util.http-response :as response]))
 
 (defn send-response [response]
   (-> response
@@ -17,3 +18,8 @@
   (send-response (response/ok {:msg "Not implemented"})))
 
 (defn uuid [] (str (java.util.UUID/randomUUID)))
+
+(defn make-vec-if-not [maybe-vec]
+  (if ((complement seq?) maybe-vec)
+    (conj []  maybe-vec)
+    (vec maybe-vec)))
