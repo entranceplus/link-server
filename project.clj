@@ -34,6 +34,7 @@
                  [expound "0.3.0"]
                  [phrase "0.1-alpha1"]
                  [reagent-utils "0.2.1"]
+                 [clj-http "3.7.0"]
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.6.2"]
                  [ring/ring-defaults "0.3.1"]

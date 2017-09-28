@@ -1,12 +1,12 @@
 (ns links.auth.core
-  (:require [ajax.core :as req :refer [raw-response-format]]
-            [buddy.auth.backends :as backends]
+  (:require [buddy.auth.backends :as backends]
             [buddy.sign.jwt :as jwt]
             [compojure.core :refer [defroutes POST]]
             [crypto.password.pbkdf2 :as password]
             [honeysql.helpers :as helpers :refer :all]
             [links.db.core :as db]
             [links.util :as util]
+            [clj-http.client :as client]
             [ring.util.http-response :as response]))
 
 (def secret "a-very-secret-string")
@@ -25,32 +25,42 @@
              :from [:users]
              :where [:= :users.username username]}))
 
-(defn get-token [{:keys [id username password]}]
-  (req/POST "http://entranceplus.in:8001/oauth2/token"
-            {:params {:client_id "JOERouFGerPXCvAtCOWvdg1DIhzRhUum"
-                      :client_secret "T94S0O6RII3dmfpXA5MYRjOeBOIrsWOY"
-                      :grant_type "password"
-                      :scope "email"
-                      :provision_key "function"
-                      :authenticated_userid id
-                      :username username
-                      :password password}
-             :response-format :json
-             :keywords? true}))
+(def oauth-config {:client_id "JOERouFGerPXCvAtCOWvdg1DIhzRhUum"
+                   :client_secret "T94S0O6RII3dmfpXA5MYRjOeBOIrsWOY"
+                   :grant_type "password"
+                   :scope "email"
+                   :provision_key "function"})
 
+(defn get-token
+  "get token from kong"
+  [{:keys [id username password]}]
+  (-> "https://links.entranceplus.in/oauth2/token"
+      (client/post {:form-params (merge oauth-config
+                                        {:authenticated_userid id
+                                         :username username
+                                         :password password})
+                    :as :json
+                    :content-type :json})
+      :body))
 
-(defn handle-auth [{:keys [username password] :as user}]
-  (if-let  [users (seq (get-users {:username username}))]
-    (when-let [{:keys [pass id]} (first (get-users {:username username}))]
-      (when (password/check password pass)
-        {:msg "User logged in"
-         :token (jwt-sign {:id id})}))
-    (let [id  (util/uuid)]
-      (create-user {:id id
-                    :username username
-                    :pass (password/encrypt password)})
-      {:msg "User created"
-       :token (jwt-sign {:id id})})))
+(defn ensure-user
+  "if username and password combo is present then get user,
+  if not then create user"
+  [{:keys [username password] :as user}]
+  (if-let  [{:keys [pass id]} (first (seq (get-users {:username username})))]
+    (when (password/check password pass)
+        (merge user {:id id}))
+    (let [id  (util/uuid)
+          user {:id id
+                :username username
+                :pass (password/encrypt password)}]
+      (create-user user)
+      user)))
+
+(defn handle-auth
+  "issue token for this user"
+  [user]
+  (-> user ensure-user get-token))
 
 ;; resource owner password credentials
 (defroutes auth-routes
@@ -58,10 +68,4 @@
         (if-let [login-response (handle-auth user-info)]
           (util/ok-response login-response)
           (util/send-response (response/bad-request
-                                 {:reason "Incorrect credentials"}))))
-  (POST "/signup" {{:keys [username password]} :params}
-        (try
-          (util/ok-response (handle-signup {:username username
-                                            :password password}))
-          (catch Exception e (util/send-response (response/bad-request
-                                                  (ex-data e)))))))
+                                 {:reason "Incorrect credentials"})))))

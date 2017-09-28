@@ -26,12 +26,12 @@
     (let [response (util/POST "/auth" user app)
           body (util/get-body response)]
       (and (is (= 200 (:status response)))
-           (is (= "User created" (:msg body)))
-           (is ((complement nil?) (:token body))))))
+           (is ((complement nil?) (:access_token body)))
+           (is ((complement nil?) (:refresh_token body))))))
 
   (testing "auth with existing user"
     (let [response (util/POST "/auth" user app)
           body (util/get-body response)]
       (and (is (= 200 (:status response)))
-           (is (= "User logged in"  (:msg body)))
-           (is ((complement nil?) (:token body)))))))
+           (is ((complement nil?) (:access_token body)))
+           (is ((complement nil?) (:refresh_token body)))))))
