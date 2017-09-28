@@ -23,3 +23,13 @@
   (if ((complement seq?) maybe-vec)
     (conj []  maybe-vec)
     (vec maybe-vec)))
+
+(defmacro if-let*
+  ([bindings then]
+   `(if-let* ~bindings ~then nil))
+  ([bindings then else]
+   (if (seq bindings)
+     `(if-let [~(first bindings) ~(second bindings)]
+        (if-let* ~(drop 2 bindings) ~then ~else)
+        ~else)
+     then)))

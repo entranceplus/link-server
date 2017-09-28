@@ -1,4 +1,4 @@
-DROP TABLE links;
+DROP TABLE links_store;
 
 --;;
 

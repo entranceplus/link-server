@@ -1,4 +1,4 @@
-(ns links.db-test
+(ns links.db.core-test
   (:require [links.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [clojure.test :refer :all]

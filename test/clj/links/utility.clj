@@ -1,4 +1,4 @@
-(ns links.test.util
+(ns links.utility
   (:require [clojure.spec.alpha :as s]
             [expound.alpha :as expound]
             [links.config :refer [env]]

@@ -19,7 +19,7 @@
                  [metosin/ring-http-response "0.9.0"]
                  [crypto-password "0.2.0"]
                  [mount "0.1.11"]
-                 [mysql/mysql-connector-java "6.0.5"]
+                 [org.postgresql/postgresql "42.1.4"]
                  [org.clojure/clojure "1.9.0-alpha16"]
                  [org.clojure/clojurescript "1.9.908" :scope "provided"]
                  [org.clojure/java.jdbc "0.7.1"]

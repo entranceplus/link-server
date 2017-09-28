@@ -1,13 +1,13 @@
 (ns links.auth.core
-  (:require [buddy.auth.backends :as backends]
+  (:require [ajax.core :as req :refer [raw-response-format]]
+            [buddy.auth.backends :as backends]
+            [buddy.sign.jwt :as jwt]
             [compojure.core :refer [defroutes POST]]
-            [links.util :as util]
-            [ring.util.http-response :as response]
-            [honeysql.core :as sql]
-            [honeysql.helpers :refer :all :as helpers]
-            [links.db.core :as db]
             [crypto.password.pbkdf2 :as password]
-            [buddy.sign.jwt :as jwt]))
+            [honeysql.helpers :as helpers :refer :all]
+            [links.db.core :as db]
+            [links.util :as util]
+            [ring.util.http-response :as response]))
 
 (def secret "a-very-secret-string")
 
@@ -18,33 +18,44 @@
 
 (defn create-user [user]
   (db/execute! (-> (insert-into :users)
-                (values [user]))))
+                   (values [user]))))
 
 (defn get-users [{:keys [username]}]
   (db/query {:select [:id :pass]
              :from [:users]
              :where [:= :users.username username]}))
 
-(defn handle-signup [{:keys [username password] :as user}]
-  (if  (empty? (get-users {:username username}))
+(defn get-token [{:keys [id username password]}]
+  (req/POST "http://entranceplus.in:8001/oauth2/token"
+            {:params {:client_id "JOERouFGerPXCvAtCOWvdg1DIhzRhUum"
+                      :client_secret "T94S0O6RII3dmfpXA5MYRjOeBOIrsWOY"
+                      :grant_type "password"
+                      :scope "email"
+                      :provision_key "function"
+                      :authenticated_userid id
+                      :username username
+                      :password password}
+             :response-format :json
+             :keywords? true}))
+
+
+(defn handle-auth [{:keys [username password] :as user}]
+  (if-let  [users (seq (get-users {:username username}))]
+    (when-let [{:keys [pass id]} (first (get-users {:username username}))]
+      (when (password/check password pass)
+        {:msg "User logged in"
+         :token (jwt-sign {:id id})}))
     (let [id  (util/uuid)]
       (create-user {:id id
                     :username username
                     :pass (password/encrypt password)})
-        {:msg "User created"
-         :token (jwt-sign {:id id})})
-    (throw (ex-info "User already exists"
-                    {:reason "User already exists"}))))
-
-(defn handle-login [{:keys [username password] :as user}]
-  (when-let [{:keys [pass id]} (first (get-users {:username username}))]
-    (when (password/check password pass)
-      {:msg "User logged in"
+      {:msg "User created"
        :token (jwt-sign {:id id})})))
 
+;; resource owner password credentials
 (defroutes auth-routes
-  (POST "/login" {user-info :params}
-        (if-let [login-response (handle-login user-info)]
+  (POST "/auth" {user-info :params}
+        (if-let [login-response (handle-auth user-info)]
           (util/ok-response login-response)
           (util/send-response (response/bad-request
                                  {:reason "Incorrect credentials"}))))

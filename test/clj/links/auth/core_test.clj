@@ -3,13 +3,13 @@
             [honeysql.helpers :refer [delete-from where]]
             [links.db.core :as db]
             [links.handler :refer [app]]
-            [links.test.util :as util :refer [get-body POST]]))
+            [links.utility :as util]))
 
 (def user {:username "a user"
            :password "sadjasjkd"})
 
 (defn delete-user [user]
-  (db/execute (-> (delete-from :users)
+  (db/execute! (-> (delete-from :users)
                   (where [:= (:username user) :username])))
   (println "user deleted"))
 
@@ -22,16 +22,16 @@
           (delete-user user)))
 
 (deftest auth
-  (testing "signup"
-    (let [response (POST "/signup" user app)
-          body (get-body response)]
+  (testing "auth"
+    (let [response (util/POST "/auth" user app)
+          body (util/get-body response)]
       (and (is (= 200 (:status response)))
-           (is ((complement nil?) (:msg body)))
+           (is (= "User created" (:msg body)))
            (is ((complement nil?) (:token body))))))
 
-  (testing "login"
-    (let [response (POST "/login" user app)
-          body (get-body response)]
+  (testing "auth with existing user"
+    (let [response (util/POST "/auth" user app)
+          body (util/get-body response)]
       (and (is (= 200 (:status response)))
-           (is ((complement nil?) (:msg body)))
+           (is (= "User logged in"  (:msg body)))
            (is ((complement nil?) (:token body)))))))
