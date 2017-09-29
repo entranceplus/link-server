@@ -21,16 +21,19 @@
           (f)
           (delete-user user)))
 
+(defn auth-user [user]
+  (util/POST "/auth" user app))
+
 (deftest auth
   (testing "auth"
-    (let [response (util/POST "/auth" user app)
+    (let [response (auth-user user)
           body (util/get-body response)]
       (and (is (= 200 (:status response)))
            (is ((complement nil?) (:access_token body)))
            (is ((complement nil?) (:refresh_token body))))))
 
   (testing "auth with existing user"
-    (let [response (util/POST "/auth" user app)
+    (let [response (auth-user user)
           body (util/get-body response)]
       (and (is (= 200 (:status response)))
            (is ((complement nil?) (:access_token body)))

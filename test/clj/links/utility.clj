@@ -23,12 +23,18 @@
 (defn- parse-string [json]
   (muuntaja/decode m "application/json" json))
 
-(defn POST [url data app]
+(defn post-request [url data app]
   (-> (mock/request :post
                     url
                     (generate-string data))
-      (mock/content-type "application/json")
+      (mock/content-type "application/json")))
+
+(defn POST! [request app]
+  (-> request
       ((app))))
+
+(defn POST [url data app]
+  (POST! (post-request url data app) app))
 
 (defn GET [url app]
   (-> (mock/request :get url)

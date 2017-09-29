@@ -1,8 +1,9 @@
 (ns links.domain
   (:require [clojure.spec.alpha :as s]
-            [expound.alpha :as expound]
+            [compojure.core :refer [defroutes POST]]
             [links.db.core :as db]
-            [links.util :as util]))
+            [links.util :as util]
+            [ring.util.http-response :as response]))
 
 (s/def ::id string?)
 (s/def ::link uri?)
@@ -30,7 +31,7 @@
 ;;                         :from :users}))))
 
 (defn add-link [link]
-  (:id (first (db/add :links link))))
+  (:id (first (db/add :links_store link))))
 
 (defn get-tag-info
   "collect ids of tags if present"
@@ -59,25 +60,22 @@
       (merge old-tags
              (add-tags new-tags)))))
 
-;; (def tags ["aasassa" "Asweasss"])
-
-;; (add-tags (filter (fn [tag]
-;;                     (not-any? #(= tag (:title %))
-;;                               (get-tag-info tags)))
-;;                   tags))
-
-;; (get-tag-info tags)
-;; (save-tags tags)
-
 (defn save-link [{:keys [url tags]} user-id]
-  (let [link-id (add-link {:url url
-                           :user_id user-id})]
+  (if-let [link-id (add-link {:url url
+                              :user_id user-id})]
     (db/add :links_tags_rel
             (map (fn [tag]
                    {:link_id link-id
-                    :tag_id (:id tag)}) (save-tags tags)))))
+                    :tag_id (:id tag)}) (save-tags tags)))
+    (throw (ex-info "Link was not saved"
+                    {:user-id user-id}))))
+
+(defroutes link-routes
+  (POST "/links" {:keys [headers params]}
+        (save-link params (get headers "x-authenticated-userid"))
+        (util/ok-response {:msg "Links recorded"})))
 
 ;; (save-link {:id "asdasd"
 ;;             :url "http://dsfdfdsfs.com"
 ;;             :tags ["asd" "sadas"]}
-;;            "f0702fe5-a828-488f-8a54-d8e2c25af854")
+;;            "52ed24e2-7f65-458f-9f19-b9b5b353c5af")

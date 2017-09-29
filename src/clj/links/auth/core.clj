@@ -34,7 +34,7 @@
 (defn get-token
   "get token from kong"
   [{:keys [id username password]}]
-  (-> "https://links.entranceplus.in/oauth2/token"
+  (-> "https://entranceplus.in/oauth2/token"
       (client/post {:form-params (merge oauth-config
                                         {:authenticated_userid id
                                          :username username
