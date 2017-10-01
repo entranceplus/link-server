@@ -6,17 +6,14 @@
             [links.config :refer [env]]
             [links.util :as util]
             [mount.core :refer [defstate]]
-            [clojure.spec.alpha :as s]))
-
-(defstate ^:dynamic *db*
-           :start (conman/connect! {:jdbc-url (env :database-url)})
-           :stop (conman/disconnect! *db*))
+            [clojure.spec.alpha :as s]
+            [system.repl :refer [system]]))
 
 (defn query [sqlmap]
-  (jdbc/query *db* (-> sqlmap sql/build sql/format)))
+  (jdbc/query (:db system) (-> sqlmap sql/build sql/format)))
 
 (defn execute! [sqlmap]
-  (jdbc/execute! *db* (sql/format sqlmap)))
+  (jdbc/execute! (:db system) (sql/format sqlmap)))
 
 (s/fdef prep-insert-data
         :args (s/cat :data map?)

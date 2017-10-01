@@ -1,7 +1,7 @@
 (ns links.utility
   (:require [clojure.spec.alpha :as s]
             [expound.alpha :as expound]
-            [links.config :refer [env]]
+            [environ.core :refer [env]]
             [luminus-migrations.core :as migrations]
             [mount.core :as mount]
             [muuntaja.core :as muuntaja]
@@ -38,19 +38,23 @@
 
 (defn GET [url app]
   (-> (mock/request :get url)
-      (mock/content-type "application/json")
-      ((app))))
+      ;; (mock/content-type "application/json")
+      app))
+
+
 
 (defn get-body [response]
   (-> response
       :body
-      slurp
       parse-string))
 
 
 (defn init []
   "start the lifecycle hooks like db and get all environment"
-  (mount/start
-      #'links.config/env
-      #'links.db.core/*db*)
-    (migrations/migrate ["migrate"] (select-keys env [:database-url])))
+  ;; (migrations/migrate ["migrate"] {:classname "org.postgresql.Driver"
+  ;;                                  :subprotocol "postgresql"
+  ;;                                  :subname ""
+  ;;                                  :user (:dbuser env)
+  ;;                                  :name (:dbname env)
+  ;;                                  :password (:dbpassword env)})
+  )

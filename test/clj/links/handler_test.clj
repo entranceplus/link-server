@@ -1,7 +1,7 @@
 (ns links.handler-test
   (:require [clojure.test :refer :all]
             [links.handler :refer :all]
-            [links.test.util :refer [GET get-body POST]]))
+            [links.utility :refer [GET get-body POST]]))
 
 (deftest test-app
   (testing "main route"

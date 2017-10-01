@@ -28,13 +28,13 @@
 (def oauth-config {:client_id "JOERouFGerPXCvAtCOWvdg1DIhzRhUum"
                    :client_secret "T94S0O6RII3dmfpXA5MYRjOeBOIrsWOY"
                    :grant_type "password"
-                   :scope "email"
+                   :scope "username"
                    :provision_key "function"})
 
 (defn get-token
   "get token from kong"
   [{:keys [id username password]}]
-  (-> "https://entranceplus.in/oauth2/token"
+  (-> "https://links.entranceplus.in/oauth2/token"
       (client/post {:form-params (merge oauth-config
                                         {:authenticated_userid id
                                          :username username

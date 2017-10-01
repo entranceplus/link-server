@@ -6,58 +6,18 @@
             [links.config :refer [env]]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.tools.logging :as log]
-            [mount.core :as mount])
+            [mount.core :as mount]
+            [links.systems :refer [prod-system prep-pg-db]]
+            [system.repl :refer [set-init! go]])
   (:gen-class))
 
-(def cli-options
-  [["-p" "--port PORT" "Port number"
-    :parse-fn #(Integer/parseInt %)]])
+(def migratus-config {:store :database
+                      :migration-dir "migrations/"
+                      :db prep-pg-db})
 
-(mount/defstate ^{:on-reload :noop}
-                http-server
-                :start
-                (http/start
-                  (-> env
-                      (assoc :handler (handler/app))
-                      (update :port #(or (-> env :options :port) %))))
-                :stop
-                (http/stop http-server))
-
-(mount/defstate ^{:on-reload :noop}
-                repl-server
-                :start
-                (when-let [nrepl-port (env :nrepl-port)]
-                  (repl/start {:port nrepl-port}))
-                :stop
-                (when repl-server
-                  (repl/stop repl-server)))
-
-
-(defn stop-app []
-  (doseq [component (:stopped (mount/stop))]
-    (log/info component "stopped"))
-  (shutdown-agents))
-
-(defn start-app [args]
-  (doseq [component (-> args
-                        (parse-opts cli-options)
-                        mount/start-with-args
-                        :started)]
-    (log/info component "started"))
-  (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
-
-(defn -main [& args]
-  (cond
-    (some #{"init"} args)
-    (do
-      (mount/start #'links.config/env)
-      (migrations/init (select-keys env [:database-url :init-script]))
-      (System/exit 0))
-    (some #{"migrate" "rollback"} args)
-    (do
-      (mount/start #'links.config/env)
-      (migrations/migrate args (select-keys env [:database-url]))
-      (System/exit 0))
-    :else
-    (start-app args))
-  )
+(defn -main
+  "Start a production system, unless a system is passed as argument (as in the dev-run task)."
+  [& args]
+  (migrations/migrate ["migrate"] migratus-config)
+  (set-init! #'prod-system)
+  (go))

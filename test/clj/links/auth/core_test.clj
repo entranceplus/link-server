@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [honeysql.helpers :refer [delete-from where]]
             [links.db.core :as db]
+            [clj-http.client :as client]
             [links.handler :refer [app]]
             [links.utility :as util]))
 
@@ -10,19 +11,23 @@
 
 (defn delete-user [user]
   (db/execute! (-> (delete-from :users)
-                  (where [:= (:username user) :username])))
+                   (where [:= (:username user) :username])))
   (println "user deleted"))
 
 (use-fixtures
   :once (fn [f]
-          (println "oohjojn")
           (util/init)
-          (delete-user user)
+          ;; (delete-user user)
           (f)
-          (delete-user user)))
+          ;; (delete-user user)
+          ))
 
 (defn auth-user [user]
-  (util/POST "/auth" user app))
+  (client/post "https://entranceplus.in/auth"
+               {:form-params user
+                :content-type :json
+                :redirect-strategy :lax
+                :format :json}))
 
 (deftest auth
   (testing "auth"

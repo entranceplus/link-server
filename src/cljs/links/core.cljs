@@ -2,6 +2,7 @@
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
             [secretary.core :as secretary]
+            [devtools.core :as devtools]
             [goog.events :as events]
             [goog.history.EventType :as HistoryEventType]
             [markdown.core :refer [md->html]]
@@ -76,3 +77,9 @@
   (fetch-docs!)
   (hook-browser-navigation!)
   (mount-components))
+
+(enable-console-print!)
+
+(devtools/install!)
+
+(init!)
