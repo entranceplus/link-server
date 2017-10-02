@@ -9,19 +9,21 @@
     [immutant-web :refer [new-immutant-web]]
     [repl-server :refer [new-repl-server]])))
 
-(def prep-pg-db
-  {:classname "org.postgresql.Driver"
-   :subprotocol "postgresql"
-   :subname ""
-   :host (:dbhost env)
-   :user (:dbuser env)
-   :dbname (:dbname env)
-   :password (:dbpassword env)})
+(defn prep-pg-db []
+  (let [p {:classname "org.postgresql.Driver"
+           :subprotocol "postgresql"
+           :subname ""
+           :host (:dbhost env)
+           :user (:dbuser env)
+           :dbname (:dbname env)
+           :password (:dbpassword env)}]
+    (print p)
+    p))
 
 (defsystem dev-system
   [:web (new-immutant-web :port (Integer. (env :http-port))
                           :handler app)
-   :db (new-postgres-database prep-pg-db)])
+   :db (new-postgres-database (prep-pg-db))])
 
 ;; (defsystem prod-system
 ;;   [:web (new-web-server (Integer. (env :http-port)) app)
@@ -30,4 +32,4 @@
 (defsystem prod-system
   [:web (new-immutant-web :port (Integer. (env :http-port))
                           :handler app)
-   :db (new-postgres-database prep-pg-db)])
+   :db (new-postgres-database (prep-pg-db))])

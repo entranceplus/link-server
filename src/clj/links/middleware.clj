@@ -1,22 +1,15 @@
 (ns links.middleware
   (:require [clojure.tools.logging :as log]
-            [cognitect.transit :as transit]
             [immutant.web.middleware :refer [wrap-session]]
-            [links.auth.core :as auth]
-            ;; [links.config :refer [env]]
-            ;; [links.env :refer [defaults]]
-            [muuntaja.core :as muuntaja]
-            [muuntaja.format.transit :as transit-format]
-            [muuntaja.middleware :refer [wrap-format wrap-params]]
-            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
+            [links.util :as util]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.flash :refer [wrap-flash]]
-            [buddy.auth.middleware :refer (wrap-authentication)]
-            [ring.middleware.webjars :refer [wrap-webjars]]
-            [links.util :as util]
             [ring.util.http-response :as response])
-  (:import javax.servlet.ServletContext
-           org.joda.time.ReadableInstant))
+  (:use  [ring.middleware.json]
+         [ring.middleware
+          params
+          keyword-params
+          nested-params]))
 
 (defn wrap-internal-error [handler]
   (fn [req]
@@ -29,33 +22,12 @@
                                            :title (.getMessage t)
                                            :message "We've dispatched a team of highly trained gnomes to take care of the problem."}))))))
 
-(def joda-time-writer
-  (transit/write-handler
-    (constantly "m")
-    (fn [v] (-> ^ReadableInstant v .getMillis))
-    (fn [v] (-> ^ReadableInstant v .getMillis .toString))))
-
-(def restful-format-options
-  (update
-    muuntaja/default-options
-    :formats
-    merge
-    {"application/transit+json"
-     {:decoder [(partial transit-format/make-transit-decoder :json)]
-      :encoder [#(transit-format/make-transit-encoder
-                   :json
-                   (merge
-                     %
-                     {:handlers {org.joda.time.DateTime joda-time-writer}}))]}}))
-
 (defn wrap-formats [handler]
-  (let [wrapped (-> handler
-                    wrap-params
-                    (wrap-format restful-format-options))]
-    (fn [request]
-      ;; disable wrap-formats for websockets
-      ;; since they're not compatible with this middleware
-      ((if (:websocket? request) handler wrapped) request))))
+  (-> handler
+      (wrap-keyword-params)
+      (wrap-nested-params)
+      (wrap-params)
+      (wrap-json)))
 
 (defn wrap-base [handler]
   (-> handler

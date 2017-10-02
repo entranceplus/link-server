@@ -5,7 +5,8 @@
             [links.auth.core :as auth]
             [links.domain :as domain]
             [links.middleware :as middleware]
-            [links.routes.home :refer [home-routes]]))
+            [links.routes.home :refer [home-routes]]
+            [ring.middleware.http-response :refer [wrap-http-response]]))
 
 (def app-routes
   (routes

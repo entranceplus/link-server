@@ -9,6 +9,7 @@
                  [honeysql "0.9.1"]
                  [cprop "0.1.11"]
                  [environ "1.1.0"]
+                 [bk/ring-json "0.1.0"]
                  [boot-environ "1.1.0"]
                  [org.danielsz/system "0.4.1-SNAPSHOT"]
                  [funcool/struct "1.1.0"]
@@ -76,9 +77,20 @@
   (comp
    (environ :env (read-string (slurp "profiles.edn")))
    (watch :verbose true)
-   (system :sys #'dev-system :auto true :files ["handler.clj"])
+   (system :sys #'dev-system
+           :auto true
+           :files ["handler.clj" "db/core.clj"])
    (reload)
    (cljs :source-map true :optimizations :none)
+   (repl :server true)))
+
+(deftask dev-clj
+  []
+  (comp
+   (environ :env (read-string (slurp "profiles.edn")))
+   (watch :verbose true)
+   (system :sys #'dev-system :auto true :files ["handler.clj", "db/core.clj" "middleware.clj"])
+   (reload)
    (repl :server true)))
 
 (deftask dev-run
@@ -110,7 +122,8 @@
    (reload)
    (notify)
    (repl :server true)
-   (test)))
+   (test)
+   (notify)))
 
 (deftask uberjar
   "Builds an uberjar of this project that can be run with java -jar"

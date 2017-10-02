@@ -13,7 +13,7 @@
 
 (def migratus-config {:store :database
                       :migration-dir "migrations/"
-                      :db prep-pg-db})
+                      :db (prep-pg-db)})
 
 (defn -main
   "Start a production system, unless a system is passed as argument (as in the dev-run task)."

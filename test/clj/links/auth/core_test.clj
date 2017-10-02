@@ -7,7 +7,7 @@
             [links.utility :as util]))
 
 (def user {:username "a user"
-           :password "sadjasjkd"})
+           :password "sadjasjkda"})
 
 (defn delete-user [user]
   (db/execute! (-> (delete-from :users)
@@ -23,11 +23,12 @@
           ))
 
 (defn auth-user [user]
-  (client/post "https://entranceplus.in/auth"
-               {:form-params user
+  (client/post "http://localhost:9000/auth"
+               {:body user
                 :content-type :json
                 :redirect-strategy :lax
-                :format :json}))
+                :format :json}
+               ))
 
 (deftest auth
   (testing "auth"

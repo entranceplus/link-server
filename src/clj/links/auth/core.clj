@@ -60,7 +60,7 @@
 (defn handle-auth
   "issue token for this user"
   [user]
-  (-> user ensure-user get-token))
+  (some-> user ensure-user get-token))
 
 ;; resource owner password credentials
 (defroutes auth-routes
@@ -68,4 +68,4 @@
         (if-let [login-response (handle-auth user-info)]
           (util/ok-response login-response)
           (util/send-response (response/bad-request
-                                 {:reason "Incorrect credentials"})))))
+                               {:reason "Incorrect credentials"})))))
