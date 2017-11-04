@@ -56,4 +56,25 @@ Authorization: bearer <access-token>
 
 ## In case token expires, new one can be issued using the auth api
 
+## User profile
+GET https://links.entranceplus.in/profile
+Content-Type: application/json
+Authorization: bearer <access-token>
+
+## Success response (will contain more profile info later on)
+{
+        "username": "akash"
+}
+
+## Links list
+GET https://links.entranceplus.in/links
+Content-Type: application/json
+Authorization: bearer <access-token>
+
+[{
+     "url": "https://asd.com",
+     "tags": ["abc", "def"]
+ }]
+
+
 ## this file can be execute using https://github.com/pashky/restclient.el
