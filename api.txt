@@ -68,9 +68,9 @@ Authorization: bearer <access-token>
 
 ## Links list
 GET https://links.entranceplus.in/links
-Content-Type: application/json
-Authorization: bearer <access-token>
+Authorization: bearer hmOeA7Y6bWi2XRbWldRBfxGb8sgf7PqX
 
+## Success response
 [{
      "url": "https://asd.com",
      "tags": ["abc", "def"]
