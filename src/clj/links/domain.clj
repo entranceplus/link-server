@@ -1,9 +1,8 @@
 (ns links.domain
   (:require [clojure.spec.alpha :as s]
-            [compojure.core :refer [defroutes POST]]
+            [compojure.core :refer [defroutes GET POST]]
             [links.db.core :as db]
-            [links.util :as util]
-            [ring.util.http-response :as response]))
+            [links.util :as util]))
 
 (s/def ::id string?)
 (s/def ::link uri?)
@@ -40,6 +39,15 @@
              :from :tags
              :where [:in :tags.title tags]}))
 
+(defn get-links-fromdb
+  "get links belonging to user-id"
+  [user-id]
+  (db/query {:select [:l.id :title :url]
+             :from [[:links_store :l]]
+             :join [[:links_tags_rel :ltr] [:= :l.id :ltr.link_id]
+                    :tags [:= :tags.id :ltr.tag_id]]
+             :where [:= :l.user_id user-id]}))
+
 (defn add-tags
   "add tags to db, this will throw exception if no-unique
   tags are being added"
@@ -70,10 +78,31 @@
     (throw (ex-info "Link was not saved"
                     {:user-id user-id}))))
 
+(defn group-links [links]
+  (group-by (fn [x] (-> x :id))  links))
+
+(defn collect-links [grouped-links]
+  (map (fn [[id links]] {:url (:url (first links))
+                        :tags (reduce (fn [acc l]
+                                        (conj acc (:title l)))
+                                      [] links)})
+       grouped-links))
+
+(def extract-links (comp collect-links group-links))
+
+(defn get-links [user-id]
+  (-> user-id
+      get-links-fromdb
+      extract-links))
+
 (defroutes link-routes
   (POST "/links" {:keys [headers params]}
         (save-link params (get headers "x-authenticated-userid"))
-        (util/ok-response {:msg "Links recorded"})))
+        (util/ok-response {:msg "Links recorded"}))
+  (GET "/links" {:keys [headers]}
+       (util/ok-response
+        (get-links (get headers "x-authenticated-userid")))))
+
 
 ;; (save-link {:id "asdasd"
 ;;             :url "http://dsfdfdsfs.com"
