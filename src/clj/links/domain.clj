@@ -79,13 +79,13 @@
                     {:user-id user-id}))))
 
 (defn group-links [links]
-  (group-by (fn [x] (-> x :id))  links))
+  (group-by (fn [x] (-> x :url))  links))
 
 (defn collect-links [grouped-links]
-  (map (fn [[id links]] {:url (:url (first links))
-                        :tags (reduce (fn [acc l]
-                                        (conj acc (:title l)))
-                                      [] links)})
+  (map (fn [[url links]] {:url url
+                         :tags (reduce (fn [acc l]
+                                         (conj acc (:title l)))
+                                       [] links)})
        grouped-links))
 
 (def extract-links (comp collect-links group-links))
