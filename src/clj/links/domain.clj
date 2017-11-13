@@ -2,7 +2,8 @@
   (:require [clojure.spec.alpha :as s]
             [compojure.core :refer [defroutes GET POST]]
             [links.db.core :as db]
-            [links.util :as util]))
+            [links.util :as util]
+            [ring.util.http-response :as response]))
 
 (s/def ::id string?)
 (s/def ::link uri?)
@@ -58,6 +59,7 @@
 (defn save-tags
   "retreive details about the tags. if tag does not exists create it"
   [tags]
+  (println "tags are " (count tags))
   (let [old-tags (get-tag-info tags)
         new-tags (filter (fn [tag]
                            (not-any? #(= tag (:title %))
@@ -96,9 +98,9 @@
       extract-links))
 
 (defroutes link-routes
-  (POST "/links" {:keys [headers params]}
-        (save-link params (get headers "x-authenticated-userid"))
-        (util/ok-response {:msg "Links recorded"}))
+  (POST "/links" {:keys [headers body]}
+        (save-link body (get headers "x-authenticated-userid"))
+        (util/ok-response {:msg "Links recordedd"}))
   (GET "/links" {:keys [headers]}
        (util/ok-response
         (get-links (get headers "x-authenticated-userid")))))
@@ -106,5 +108,5 @@
 
 ;; (save-link {:id "asdasd"
 ;;             :url "http://dsfdfdsfs.com"
-;;             :tags ["asd" "sadas"]}
+;;             :tags ["sadas"]}
 ;;            "52ed24e2-7f65-458f-9f19-b9b5b353c5af")

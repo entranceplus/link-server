@@ -48,6 +48,7 @@
                  [selmer "1.11.1"]
                  [prone "1.1.4"]
                  [ring/ring-mock "0.3.0"  :scope "test"]
+                 [ring/ring-json "0.4.0"]
                  [ring/ring-devel "1.6.1"  :scope "test"]
                  [pjstadig/humane-test-output "0.8.2"  :scope "test"]
                  [binaryage/devtools "0.9.4"  :scope "test"]
@@ -79,7 +80,7 @@
    (watch :verbose true)
    (system :sys #'dev-system
            :auto true
-           :files ["handler.clj" "db/core.clj"])
+           :files ["handler.clj" "db/core.clj" "domain.clj"])
    (reload)
    (cljs :source-map true :optimizations :none)
    (repl :server true)))
@@ -89,7 +90,7 @@
   (comp
    (environ :env (read-string (slurp "profiles.edn")))
    (watch :verbose true)
-   (system :sys #'dev-system :auto true :files ["handler.clj", "db/core.clj" "middleware.clj"])
+   (system :sys #'dev-system :auto true :files ["handler.clj", "db/core.clj" "middleware.clj" "domain.clj"])
    (reload)
    (repl :server true)))
 

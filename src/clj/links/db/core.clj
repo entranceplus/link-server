@@ -13,7 +13,9 @@
   (jdbc/query (:db system) (-> sqlmap sql/build sql/format)))
 
 (defn execute! [sqlmap]
-  (jdbc/execute! (:db system) (sql/format sqlmap)))
+  (jdbc/execute! (:db system) (let [sql (sql/format sqlmap)]
+                                (println sql)
+                                sql)))
 
 (s/fdef prep-insert-data
         :args (s/cat :data map?)

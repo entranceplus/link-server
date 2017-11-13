@@ -4,6 +4,7 @@
             [links.util :as util]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.flash :refer [wrap-flash]]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.util.http-response :as response])
   (:use  [ring.middleware.json]
          [ring.middleware
@@ -27,7 +28,8 @@
       (wrap-keyword-params)
       (wrap-nested-params)
       (wrap-params)
-      (wrap-json)))
+      (wrap-json-response)
+      (wrap-json-body {:keywords? true :bigdecimals? true})))
 
 (defn wrap-base [handler]
   (-> handler

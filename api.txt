@@ -36,7 +36,7 @@ Authorization: bearer <access-token>
 
 {
         "url": "https://asd.com",
-        "tags": ["abc", "def"]
+        "tags": ["abc"]
 }
 
 
@@ -68,7 +68,7 @@ Authorization: bearer <access-token>
 
 ## Links list
 GET https://links.entranceplus.in/links
-Authorization: bearer hmOeA7Y6bWi2XRbWldRBfxGb8sgf7PqX
+Authorization: bearer <access-token>
 
 ## Success response
 [{
