@@ -64,7 +64,7 @@
 
 ;; resource owner password credentials
 (defroutes auth-routes
-  (POST "/auth" {user-info :params}
+  (POST "/auth" {user-info :body}
         (if-let [login-response (handle-auth user-info)]
           (util/ok-response login-response)
           (util/send-response (response/bad-request
