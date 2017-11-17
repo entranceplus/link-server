@@ -5,6 +5,7 @@
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.flash :refer [wrap-flash]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.util.http-response :as response])
   (:use  [ring.middleware.json]
          [ring.middleware
@@ -36,6 +37,8 @@
       wrap-flash
       (wrap-session {:cookie-attrs {:http-only true}})
       wrap-internal-error
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :post])
       (wrap-defaults
         (-> site-defaults
             (assoc-in [:static :resources] "")

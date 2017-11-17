@@ -65,10 +65,11 @@
                            (not-any? #(= tag (:title %))
                                      old-tags))
                          tags)]
-    (if (empty? new-tags)
-      old-tags
-      (merge old-tags
-             (add-tags new-tags)))))
+    (->> new-tags
+         add-tags
+         seq
+         (concat old-tags)
+         distinct)))
 
 (defn save-link [{:keys [url tags]} user-id]
   (if-let [link-id (add-link {:url url
@@ -99,11 +100,14 @@
 
 (defroutes link-routes
   (POST "/links" {:keys [headers body]}
-        (save-link body (get headers "x-authenticated-userid"))
+        (println "are you sure?" body)
+        (save-link body (or (get headers "x-authenticated-userid")
+                            "52ed24e2-7f65-458f-9f19-b9b5b353c5af"))
         (util/ok-response {:msg "Links recordedd"}))
   (GET "/links" {:keys [headers]}
        (util/ok-response
-        (get-links (get headers "x-authenticated-userid")))))
+        (get-links (or (get headers "x-authenticated-userid")
+                       "52ed24e2-7f65-458f-9f19-b9b5b353c5af")))))
 
 
 ;; (save-link {:id "asdasd"

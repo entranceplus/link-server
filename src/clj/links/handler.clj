@@ -10,10 +10,7 @@
 
 (def app-routes
   (routes
-    (-> #'home-routes
-        ;; (wrap-routes middleware/wrap-csrf)
-        ;; (wrap-routes middleware/wrap-formats)
-        )
+    (-> #'home-routes)
     (-> #'auth/auth-routes
         (wrap-routes middleware/wrap-formats))
     (-> #'domain/link-routes

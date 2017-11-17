@@ -9,6 +9,7 @@
                  [honeysql "0.9.1"]
                  [cprop "0.1.11"]
                  [environ "1.1.0"]
+                 [ring-cors "0.1.11"]
                  [bk/ring-json "0.1.0"]
                  [boot-environ "1.1.0"]
                  [org.danielsz/system "0.4.1-SNAPSHOT"]
