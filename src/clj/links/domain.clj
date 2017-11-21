@@ -5,79 +5,27 @@
             [links.util :as util]
             [ring.util.http-response :as response]))
 
-(s/def ::id string?)
-(s/def ::link uri?)
-
-(s/def ::tag (s/and string?
-                    (complement empty?)))
-
-(s/def ::tags (s/coll-of ::tag
-                         :distinct true))
-
-(s/valid? ::tag "")
-
-(s/def ::link-data (s/keys :req-un [::id ::link ::tags]))
-
-;; (def a-tag {:id "asdasd"
-;;             :link "http://dsfdfdsfs.com"
-;;             :tags ["asd" "sadas"]})
-
-
-;; (let [parsed (s/conform ::link-data a-tag)]
-;;   (if (= parsed ::s/invalid)
-;;     (throw (ex-info "Invalid input"
-;;                     {:reason (expound/expound-str ::link-data a-tag)}))
-;;     (println (db/query {:select :id
-;;                         :from :users}))))
-
-(defn add-link [link]
-  (:id (first (db/add :links_store link))))
-
-(defn get-tag-info
-  "collect ids of tags if present"
-  [tags]
-  (db/query {:select [:id :title]
-             :from :tags
-             :where [:in :tags.title tags]}))
-
-(defn get-links-fromdb
-  "get links belonging to user-id"
-  [user-id]
-  (db/query {:select [:l.id :title :url]
-             :from [[:links_store :l]]
-             :join [[:links_tags_rel :ltr] [:= :l.id :ltr.link_id]
-                    :tags [:= :tags.id :ltr.tag_id]]
-             :where [:= :l.user_id user-id]}))
-
-(defn add-tags
-  "add tags to db, this will throw exception if no-unique
-  tags are being added"
-  [tags]
-  (db/add :tags (map (fn [tag] {:title tag})
-                     tags)))
-
 (defn save-tags
   "retreive details about the tags. if tag does not exists create it"
   [tags]
   (println "tags are " (count tags))
-  (let [old-tags (get-tag-info tags)
+  (let [old-tags (db/get-tag-info tags)
         new-tags (filter (fn [tag]
                            (not-any? #(= tag (:title %))
                                      old-tags))
                          tags)]
     (->> new-tags
-         add-tags
+         db/add-tags
          seq
          (concat old-tags)
          distinct)))
 
 (defn save-link [{:keys [url tags]} user-id]
-  (if-let [link-id (add-link {:url url
+  (if-let [link-id (db/add-link {:url url
                               :user_id user-id})]
-    (db/add :links_tags_rel
-            (map (fn [tag]
-                   {:link_id link-id
-                    :tag_id (:id tag)}) (save-tags tags)))
+    (->> tags
+        save-tags
+        (db/add-links-tags-rel link-id))
     (throw (ex-info "Link was not saved"
                     {:user-id user-id}))))
 
@@ -95,19 +43,16 @@
 
 (defn get-links [user-id]
   (-> user-id
-      get-links-fromdb
+      db/get-links
       extract-links))
 
 (defroutes link-routes
   (POST "/links" {:keys [headers body]}
-        (println "are you sure?" body)
-        (save-link body (or (get headers "x-authenticated-userid")
-                            "52ed24e2-7f65-458f-9f19-b9b5b353c5af"))
+        (save-link body (get headers "x-authenticated-userid"))
         (util/ok-response {:msg "Links recordedd"}))
   (GET "/links" {:keys [headers]}
        (util/ok-response
-        (get-links (or (get headers "x-authenticated-userid")
-                       "52ed24e2-7f65-458f-9f19-b9b5b353c5af")))))
+        (get-links (get headers "x-authenticated-userid")))))
 
 
 ;; (save-link {:id "asdasd"

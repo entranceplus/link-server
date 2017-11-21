@@ -1,44 +1,37 @@
 (ns links.db.core
-  (:require [clojure.java.jdbc :as jdbc]
-            [conman.core :as conman]
-            [honeysql.core :as sql]
-            [honeysql.helpers :as helpers :refer :all]
-            [links.config :refer [env]]
-            [links.util :as util]
-            [mount.core :refer [defstate]]
-            [clojure.spec.alpha :as s]
-            [system.repl :refer [system]]))
+  (:require [links.db.util :as dbutil]
+            [links.util :as util]))
 
-(defn query [sqlmap]
-  (jdbc/query (:db system) (-> sqlmap sql/build sql/format)))
+(defn add-link [link]
+  (:id (first (dbutil/add :links_store link))))
 
-(defn execute! [sqlmap]
-  (jdbc/execute! (:db system) (let [sql (sql/format sqlmap)]
-                                (println sql)
-                                sql)))
+(defn get-tag-info
+  "collect ids of tags if present"
+  [tags]
+  (dbutil/query {:select [:id :title]
+                 :from :tags
+                 :where [:in :tags.title tags]}))
 
-(s/fdef prep-insert-data
-        :args (s/cat :data map?)
-        :ret vector?
-        :fn #(every? :id (-> % :ret)))
+(defn get-links
+  "get links belonging to user-id"
+  [user-id]
+  (dbutil/query {:select [:l.id :title :url]
+                 :from [[:links_store :l]]
+                 :join [[:links_tags_rel :ltr] [:= :l.id :ltr.link_id]
+                        :tags [:= :tags.id :ltr.tag_id]]
+                 :where [:= :l.user_id user-id]}))
 
-(defn- prep-insert-data
-  "if you have not set id it will"
-  [data]
-  (mapv (fn [data]
-         (cond-> data
-           (nil? (:id data)) (assoc :id (util/uuid))))
-       (util/make-vec-if-not data)))
+(defn add-tags
+  "add tags to db, this will throw exception if no-unique
+  tags are being added"
+  [tags]
+  (dbutil/add :tags (map (fn [tag] {:title tag})
+                         tags)))
 
-;; (require '[clojure.spec.test.alpha :as stest])
-;; (stest/instrument `prep-insert-data)
-;; (println (stest/check `prep-insert-data))
-
-(defn add
-  "insert data into table"
-  [table data]
-  (if-let [rows (prep-insert-data data)]
-    (when ((complement empty?) rows)
-      (execute! (-> (insert-into table)
-                    (values rows)))
-      rows)))
+(defn add-links-tags-rel
+  "add provided tags relation with the given link id"
+  [link-id tags]
+  (dbutil/add :links_tags_rel
+            (map (fn [tag]
+                   {:link_id link-id
+                    :tag_id (:id tag)}) tags)))

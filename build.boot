@@ -77,7 +77,9 @@
   "Run a restartable system in the Repl"
   []
   (comp
-   (environ :env (read-string (slurp "profiles.edn")))
+   (environ :env (-> "profiles.edn"
+                     slurp
+                     read-string))
    (watch :verbose true)
    (system :sys #'dev-system
            :auto true

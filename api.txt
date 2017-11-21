@@ -67,8 +67,8 @@ Authorization: bearer <access-token>
 }
 
 ## Links list
-GET https://links.entranceplus.in/links
-Authorization: bearer <access-token>
+GET http://localhost:9000/links
+Authorization: bearer OKI5ZDiTciaJBHfFSaX0EO00RHEb701I
 
 ## Success response
 [{
