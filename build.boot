@@ -2,7 +2,9 @@
  :source-paths #{"src/clj" "src/cljc" "src/cljs"}
  :resource-paths #{"resources"}
  ;; :clean-targets ^{:protect false} [:target-path :compile-path "out/public/out"]
+ :checkouts '[[snow "0.1.0-SNAPSHOT"]]
  :dependencies '[[clj-time "0.14.0"]
+                 [snow "0.1.0-SNAPSHOT"]
                  [cljs-ajax "0.7.2"]
                  [compojure "1.6.0"]
                  [conman "0.6.8"]
@@ -31,6 +33,7 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.webjars.bower/tether "1.4.0"]
+                 [org.clojars.gnzh/feedparser-clj "0.6.0"]
                  [org.webjars/bootstrap "4.0.0-alpha.5"]
                  [org.webjars/font-awesome "4.7.0"]
                  [re-frame "0.10.1"]
@@ -72,6 +75,8 @@
          '[environ.boot :refer [environ]]
          '[system.boot :refer [system run]]
          '[adzerk.boot-test :refer :all])
+
+(require '[snow.boot :refer :all])
 
 (deftask dev
   "Run a restartable system in the Repl"
