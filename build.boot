@@ -34,6 +34,7 @@
                  [org.clojure/tools.logging "0.4.0"]
                  [org.webjars.bower/tether "1.4.0"]
                  [org.clojars.gnzh/feedparser-clj "0.6.0"]
+                 [datawalk "0.1.12"]
                  [org.webjars/bootstrap "4.0.0-alpha.5"]
                  [org.webjars/font-awesome "4.7.0"]
                  [re-frame "0.10.1"]
