@@ -12,3 +12,5 @@ profiles.clj
 /log
 *.log
 .cljs_rhino_repl/
+.nrepl-history
+profiles.edn

@@ -1,37 +1,65 @@
 (ns links.db.core
   (:require [links.db.util :as dbutil]
-            [links.util :as util]))
+            [clojure.core.async :refer [<!!]]
+            [snow.datomic :as d]
+            [clojure.spec.alpha :as s]
+            [expound.alpha :as e]
+            [system.repl :refer [system]]
+            [clojure.tools.logging :as log]))
 
-(defn add-link [link]
-  (:id (first (dbutil/add :links_store link))))
+(def link-schema
+  [{:db/ident :links/url
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "The url of link"}
 
-(defn get-tag-info
-  "collect ids of tags if present"
-  [tags]
-  (dbutil/query {:select [:id :title]
-                 :from :tags
-                 :where [:in :tags.title tags]}))
+   {:db/ident :user/id
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "user id of user saving the link"}
 
+   {:db/ident :links/tags
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/many
+    :db/doc "List of tags"}])
+
+(defn load-schema [conn]
+  (d/transact conn link-schema))
+
+;; (load-schema (:conn (:db system.repl/system)))
+
+(s/def :links/url string?)
+(s/def :user/id string?)
+(s/def :links/tags (s/coll-of string?))
+
+(s/def :links/data (s/keys :req [:links/url :user/id :links/tags]))
+
+(defn link-present?
+  "Checks the presence of url belonging to user-id"
+  [conn url user-id]
+  (empty? (d/query conn '[:find ?e
+                          :where [?e :links/url url]
+                          [?e :user/id user-id]])))
+
+(defn add-link
+  "add link to db if not exists returns nil if link already exists"
+  [conn {url :links/url user-id :user/id :as link}]
+  {:pre [(s/valid? (complement nil?) conn)
+         (s/valid? :links/data link)]}
+  (log/debug "link to be added " link)
+  (when (link-present? conn url user-id)
+    (d/transact conn link)))
+
+;; todo add post spec checking
 (defn get-links
-  "get links belonging to user-id"
-  [user-id]
-  (dbutil/query {:select [:l.id :title :url]
-                 :from [[:links_store :l]]
-                 :join [[:links_tags_rel :ltr] [:= :l.id :ltr.link_id]
-                        :tags [:= :tags.id :ltr.tag_id]]
-                 :where [:= :l.user_id user-id]}))
+  "get links belonging to a user id"
+  [conn user-id]
+  (d/query conn `[:find  (~'pull ?e ~'[*])
+                  :where [?e :user/id ~user-id]]))
 
-(defn add-tags
-  "add tags to db, this will throw exception if no-unique
-  tags are being added"
-  [tags]
-  (dbutil/add :tags (map (fn [tag] {:title tag})
-                         tags)))
-
-(defn add-links-tags-rel
-  "add provided tags relation with the given link id"
-  [link-id tags]
-  (dbutil/add :links_tags_rel
-            (map (fn [tag]
-                   {:link_id link-id
-                    :tag_id (:id tag)}) tags)))
+;; for repl experiments
+(comment (def conn (-> system :db :conn))
+         (add-link conn {:links/url "abc"
+                         :user/id "ok"
+                         :links/tags []})
+         (get-links conn "ok"))

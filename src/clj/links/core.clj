@@ -7,17 +7,12 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.tools.logging :as log]
             [mount.core :as mount]
-            [links.systems :refer [prod-system prep-pg-db]]
+            [links.systems :refer [prod-system]]
             [system.repl :refer [set-init! go]])
   (:gen-class))
-
-(def migratus-config {:store :database
-                      :migration-dir "migrations/"
-                      :db (prep-pg-db)})
 
 (defn -main
   "Start a production system, unless a system is passed as argument (as in the dev-run task)."
   [& args]
-  (migrations/migrate ["migrate"] migratus-config)
   (set-init! #'prod-system)
   (go))

@@ -1,3 +1,5 @@
+(def local-profile (-> "profiles.edn" slurp read-string))
+
 (set-env!
  :source-paths #{"src/clj" "src/cljc" "src/cljs"}
  :resource-paths #{"resources"}
@@ -6,11 +8,13 @@
  :dependencies '[[clj-time "0.14.0"]
                  [snow "0.1.0-SNAPSHOT"]
                  [cljs-ajax "0.7.2"]
+                 [ring-middleware-format "0.7.2"]
                  [compojure "1.6.0"]
                  [conman "0.6.8"]
                  [honeysql "0.9.1"]
                  [cprop "0.1.11"]
                  [environ "1.1.0"]
+                 [ring-logger "0.7.7"]
                  [ring-cors "0.1.11"]
                  [bk/ring-json "0.1.0"]
                  [boot-environ "1.1.0"]
@@ -19,7 +23,8 @@
                  [luminus-immutant "0.2.3"]
                  [luminus-migrations "0.4.2"]
                  [luminus-nrepl "0.1.4"]
-                 [org.clojure/clojure "1.9.0-alpha16" :scope "provided"]
+                 [org.clojure/clojure "1.9.0" :scope "provided"]
+                 [org.clojure/core.async "0.3.465"]
                  [org.clojure/clojurescript "1.9.908" :scope "provided"]
                  [luminus/ring-ttl-session "0.3.2"]
                  [markdown-clj "1.0.1"]
@@ -32,6 +37,7 @@
                  [org.clojure/java.jdbc "0.7.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.logging "0.4.0"]
+                 [adzerk/boot-logservice "1.2.0"]
                  [org.webjars.bower/tether "1.4.0"]
                  [org.clojars.gnzh/feedparser-clj "0.6.0"]
                  [datawalk "0.1.12"]
@@ -45,6 +51,7 @@
                  [phrase "0.1-alpha1"]
                  [reagent-utils "0.2.1"]
                  [clj-http "3.7.0"]
+                 [com.datomic/datomic-pro "0.9.5656"]
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.6.2"]
                  [ring/ring-defaults "0.3.1"]
@@ -67,7 +74,11 @@
                  [adzerk/boot-cljs-repl "0.3.3" :scope "test"]
                  [pandeiro/boot-http "0.7.6" :scope "test"]
                  [powerlaces/boot-figreload "0.1.1-SNAPSHOT" :scope "test"]
-                 [adzerk/boot-reload "0.5.2" :scope "test"]])
+                 [adzerk/boot-reload "0.5.2" :scope "test"]]
+ :repositories #(conj %
+                      ["my-datomic" {:url "https://my.datomic.com/repo"
+                                     :username (local-profile :datomic-username)
+                                     :password (local-profile :datomic-password)}]))
 
 (require '[adzerk.boot-cljs :refer :all]
          '[adzerk.boot-cljs-repl :refer :all]
@@ -77,21 +88,43 @@
          '[system.boot :refer [system run]]
          '[adzerk.boot-test :refer :all])
 
-(require '[snow.boot :refer :all])
+(require '[adzerk.boot-logservice :as log-service]
+         '[clojure.tools.logging  :as log])
+
+;(require '[snow.boot :refer :all])
+
+(def log-config
+  [:configuration {:scan true, :scanPeriod "10 seconds"}
+   [:appender {:name "FILE" :class "ch.qos.logback.core.rolling.RollingFileAppender"}
+    [:encoder [:pattern "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"]]
+    [:rollingPolicy {:class "ch.qos.logback.core.rolling.TimeBasedRollingPolicy"}
+     [:fileNamePattern "logs/%d{yyyy-MM-dd}.%i.log"]
+     [:timeBasedFileNamingAndTriggeringPolicy {:class "ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP"}
+      [:maxFileSize "64 MB"]]]
+    [:prudent true]]
+   [:appender {:name "STDOUT" :class "ch.qos.logback.core.ConsoleAppender"}
+    [:encoder [:pattern "%-5level %logger{36} - %msg%n"]]
+    [:filter {:class "ch.qos.logback.classic.filter.ThresholdFilter"}
+     [:level "INFO"]]]
+   [:root {:level "DEBUG"}
+    [:appender-ref {:ref "FILE"}]
+    [:appender-ref {:ref "STDOUT"}]]
+   [:logger {:name "user" :level "ALL"}]
+   [:logger {:name "boot.user" :level "ALL"}]])
+
+(alter-var-root #'log/*logger-factory* (constantly (log-service/make-factory log-config)))
 
 (deftask dev
   "Run a restartable system in the Repl"
   []
   (comp
-   (environ :env (-> "profiles.edn"
-                     slurp
-                     read-string))
+   (environ :env local-profile)
    (watch :verbose true)
    (system :sys #'dev-system
            :auto true
-           :files ["handler.clj" "db/core.clj" "domain.clj"])
+           :files ["handler.clj" "core.clj" "domain.clj"])
    (reload)
-   (cljs :source-map true :optimizations :none)
+;;   (cljs :source-map true :optimizations :none)
    (repl :server true)))
 
 (deftask dev-clj
@@ -120,7 +153,7 @@
                   :repl-port "8009"})
    (cljs :optimizations :advanced)
    (run :main-namespace "links.core" :arguments [#'prod-system])
-(wait)))
+   (wait)))
 
 (deftask wtest
   []
