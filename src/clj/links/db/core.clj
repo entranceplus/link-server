@@ -1,6 +1,5 @@
 (ns links.db.core
-  (:require [links.db.util :as dbutil]
-            [clojure.core.async :refer [<!!]]
+  (:require [clojure.core.async :refer [<!!]]
             [snow.datomic :as d]
             [clojure.spec.alpha :as s]
             [expound.alpha :as e]
@@ -8,25 +7,23 @@
             [clojure.tools.logging :as log]))
 
 (def link-schema
-  [{:db/ident :links/url
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/doc "The url of link"}
+  '[{:db/ident :links/url
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "The url of link"}
 
-   {:db/ident :user/id
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/doc "user id of user saving the link"}
+    {:db/ident :user/id
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "user id of user saving the link"}
 
-   {:db/ident :links/tags
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/many
-    :db/doc "List of tags"}])
+    {:db/ident :links/tags
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/many
+     :db/doc "List of tags"}])
 
 (defn load-schema [conn]
   (d/transact conn link-schema))
-
-;; (load-schema (:conn (:db system.repl/system)))
 
 (s/def :links/url string?)
 (s/def :user/id string?)

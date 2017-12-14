@@ -4,7 +4,8 @@
  :source-paths #{"src/clj" "src/cljc" "src/cljs"}
  :resource-paths #{"resources"}
  ;; :clean-targets ^{:protect false} [:target-path :compile-path "out/public/out"]
- :checkouts '[[snow "0.1.0-SNAPSHOT"]]
+ :checkouts '[[snow "0.1.0-SNAPSHOT"]
+              [org.danielsz/system "0.4.2-SNAPSHOT"]]
  :dependencies '[[clj-time "0.14.0"]
                  [snow "0.1.0-SNAPSHOT"]
                  [cljs-ajax "0.7.2"]
@@ -18,7 +19,7 @@
                  [ring-cors "0.1.11"]
                  [bk/ring-json "0.1.0"]
                  [boot-environ "1.1.0"]
-                 [org.danielsz/system "0.4.1-SNAPSHOT"]
+                 [org.danielsz/system "0.4.2-SNAPSHOT"]
                  [funcool/struct "1.1.0"]
                  [luminus-immutant "0.2.3"]
                  [luminus-migrations "0.4.2"]

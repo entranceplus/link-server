@@ -7,6 +7,7 @@
    [ring.middleware.format :refer [wrap-restful-format]]
    [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
    [ring.logger :refer [wrap-with-logger]]
+   [links.db.core :refer [load-schema]]
    (system.components
     [jetty :refer [new-jetty new-web-server]]
     [postgres :refer [new-postgres-database]]
@@ -23,9 +24,11 @@
                          :formats [:json-kw]
                          :response-options {:json-kw {:pretty true}})))
 
+
 (defn dev-system []
   (component/system-map
-   :db  (new-datomic-db "datomic:dev://localhost:4334/links-store")
+   :db  (new-datomic-db "datomic:dev://localhost:4334/toy"
+                        load-schema)
    :links (component/using
            (new-endpoint link-routes)
            [:db])
