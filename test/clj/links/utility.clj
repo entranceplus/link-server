@@ -2,7 +2,6 @@
   (:require [clojure.spec.alpha :as s]
             [expound.alpha :as expound]
             [environ.core :refer [env]]
-            [luminus-migrations.core :as migrations]
             [mount.core :as mount]
             [muuntaja.core :as muuntaja]
             [ring.mock.request :as mock]))

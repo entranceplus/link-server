@@ -7,16 +7,17 @@
    [ring.middleware.format :refer [wrap-restful-format]]
    [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
    [ring.logger :refer [wrap-with-logger]]
-   [links.db.core :refer [load-schema]]
+   [snow.systems :as system]
    (system.components
     [jetty :refer [new-jetty new-web-server]]
     [postgres :refer [new-postgres-database]]
     [immutant-web :refer [new-immutant-web]]
     [repl-server :refer [new-repl-server]]
+    [http-kit :refer [new-http-kit]]
     [endpoint :refer [new-endpoint]]
     [middleware :refer [new-middleware]]
-    [handler :refer [new-handler]]
-    [datomic :refer [new-datomic-db]])))
+    [konserve :refer [new-konserve]]
+    [handler :refer [new-handler]])))
 
 (def rest-middleware
   (fn [handler]
@@ -24,11 +25,8 @@
                          :formats [:json-kw]
                          :response-options {:json-kw {:pretty true}})))
 
-
-(defn dev-system []
-  (component/system-map
-   :db  (new-datomic-db "datomic:dev://localhost:4334/toy"
-                        load-schema)
+(defn system-config [config]
+  [:db (new-konserve :type :filestore :path (config :db-path))
    :links (component/using
            (new-endpoint link-routes)
            [:db])
@@ -40,8 +38,11 @@
              (new-handler)
              [:links :middleware])
    :web (component/using
-         (new-immutant-web :port (Integer. (env :http-port)))
-         [:handler])))
+         (new-http-kit :port (system/get-port config :http-port))
+         [:handler])])
+
+(defn dev-system []
+  (system/gen-system system-config))
 
 
 ;; (defsystem prod-system

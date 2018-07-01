@@ -14,7 +14,7 @@
 ;;        (util/ok-response
 ;;         (get-links (get headers "x-authenticated-userid"))))
 ;;   )
-(defn link-routes [{{conn :conn} :db}]
+(defn link-routes [{{conn :store}  :db}]
   (routes
    (POST "/links" {:keys [headers params]}
          (let [{:keys [url user-id tags]} params]
@@ -25,8 +25,9 @@
                                 :link link})
              (util/ok-response
               {:msg "Link was already there"}))))
-   (GET "/links" []
-        (util/ok-response (db/get-links conn "ki")))))
+   (GET "/links/:user-id" [user-id]
+        (println "fetching links for " user-id)
+        (util/ok-response (db/get-links conn user-id)))))
 
 ;; (save-link {:id "asdasd"
 ;;             :url "http://dsfdfdsfs.com"
