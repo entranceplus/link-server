@@ -1,7 +1,7 @@
 (def local-profile (-> "profiles.edn" slurp read-string))
 
 (set-env!
- :source-paths #{"src/clj" "src/cljc" "src/cljs"}
+ :source-paths #{"src/clj" "src/cljc"}
  :resource-paths #{"resources"}
  ;; :clean-targets ^{:protect false} [:target-path :compile-path "out/public/out"]
  :repositories #(conj %
@@ -111,7 +111,6 @@
   []
   (comp
    (environ :env (read-string (slurp "profiles.edn")))
-   (cljs)
    (run :main-namespace "links.core" :arguments [#'dev-system])
    (wait)))
 
@@ -121,7 +120,6 @@
   (comp
    (environ :env {:http-port "8008"
                   :repl-port "8009"})
-   (cljs :optimizations :advanced)
    (run :main-namespace "links.core" :arguments [#'prod-system])
    (wait)))
 
@@ -142,9 +140,7 @@
   "Builds an uberjar of this project that can be run with java -jar"
   []
   (comp
-   (aot :namespace #{'links.core})
-   (cljs :optimizations :advanced)
    (uber)
-   (jar :file "links.jar" :main 'links.core)
+   (jar)
    (sift :include #{#"links.jar"})
-   (target)))
+   (target :dir #{"target"})))
