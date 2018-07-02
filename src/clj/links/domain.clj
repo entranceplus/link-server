@@ -4,7 +4,8 @@
             [links.db.core :as db]
             [links.util :as util]
             [ring.util.http-response :as response]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [buddy.auth :refer [authenticated? throw-unauthorized]]))
 
 ;; (defroutes link-routes
 ;;   (POST "/links" {:keys [headers body]}
@@ -14,20 +15,31 @@
 ;;        (util/ok-response
 ;;         (get-links (get headers "x-authenticated-userid"))))
 ;;   )
+
+(defn with-authentication [req handler]
+  (if (authenticated? req)
+    (handler req)
+    (throw-unauthorized {:message "Not authorized"})))
+
 (defn link-routes [{{conn :store}  :db}]
   (routes
-   (POST "/links" {:keys [headers params]}
-         (let [{:keys [url user-id tags]} params]
-           (if-let [link (db/add-link conn {:links/url url
-                                            :user/id user-id
-                                            :links/tags tags})]
-             (util/ok-response {:msg "Link added"
-                                :link link})
-             (util/ok-response
-              {:msg "Link was already there"}))))
-   (GET "/links/:user-id" [user-id]
-        (println "fetching links for " user-id)
-        (util/ok-response (db/get-links conn user-id)))))
+   (POST "/links" {:keys [headers params] :as req}
+         (with-authentication req 
+           (fn [req]
+             (let [{:keys [url tags]} params
+                   user-id (-> req :identity :_id)]
+               (if-let [link (db/add-link conn {:links/url url
+                                                :user/id user-id
+                                                :links/tags tags})]
+                 (util/ok-response {:msg "Link added"
+                                    :link link})
+                 (util/ok-response
+                  {:msg "Link was already there"}))))))
+   (GET "/links/:user-id" [user-id :as req]
+        (with-authentication req
+          (fn [req]
+            (let [user-id (-> req :identity :_id)]
+              (util/ok-response (db/get-links conn user-id))))))))
 
 ;; (save-link {:id "asdasd"
 ;;             :url "http://dsfdfdsfs.com"

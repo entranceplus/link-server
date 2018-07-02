@@ -8,6 +8,9 @@
    [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
    [ring.logger :refer [wrap-with-logger]]
    [snow.systems :as system]
+   [buddy.auth.middleware :refer (wrap-authentication wrap-authorization)]
+   [buddy.auth.backends :as backend]
+   [snow.env :refer [profile]]
    (system.components
     [jetty :refer [new-jetty new-web-server]]
     [postgres :refer [new-postgres-database]]
@@ -25,6 +28,9 @@
                          :formats [:json-kw]
                          :response-options {:json-kw {:pretty true}})))
 
+(def secret (-> (profile) :secret))
+(def backend (backend/jws {:secret secret}))
+
 (defn system-config [config]
   [:db (new-konserve :type :filestore :path (config :db-path))
    :links (component/using
@@ -33,6 +39,8 @@
    :middleware (new-middleware
                 {:middleware  [rest-middleware
                                [wrap-defaults api-defaults]
+                               [wrap-authentication backend]
+                               [wrap-authorization backend]
                                wrap-with-logger]})
    :handler (component/using
              (new-handler)
