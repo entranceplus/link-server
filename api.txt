@@ -1,38 +1,15 @@
 ### Api docs
 
+### Base Url: 139.162.12.20:9000
+
 ## Initiate login for given username
 
-# This is the api for auth, this supports both login and
-# sign up. If you pass credentials that don't exists then it will be created,
-# else it will be matched upon.
-POST https://auth.entranceplus.in/auth
-Content-Type: application/json
-
-{
-        "username": "akash",
-        "password": "me"
-}
-
-## Success Response
-
-# {
-#   "refresh_token": "Iu4KB9CCchmBpkphhICl1d3tu4fw9n0G",
-#   "token_type": "bearer",
-#   "access_token": "wNNjGDyobwM9x5wShOXtgloW3cJrR6TC",
-#   "expires_in": 7200
-# }
-
-## Error Response
-
-# {
-#   "reason": "Incorrect credentials"
-# }
-
+## Authentication using     https://github.com/siddhant94/aviana
 
 ## Save links
 POST https://links.entranceplus.in/links
 Content-Type: application/json
-Authorization: bearer <access-token>
+Authorization: Token <access-token>
 
 {
         "url": "https://asd.com",
@@ -47,28 +24,9 @@ Authorization: bearer <access-token>
 # }
 
 
-##Error response (in case token is not correct)
-
-# {
-#   "error_description": "The access token is invalid or has expired",
-#   "error": "invalid_token"
-# }
-
-## In case token expires, new one can be issued using the auth api
-
-## User profile
-GET https://links.entranceplus.in/profile
-Content-Type: application/json
-Authorization: bearer <access-token>
-
-## Success response (will contain more profile info later on)
-{
-        "username": "akash"
-}
-
 ## Links list
 GET http://localhost:9000/links
-Authorization: bearer OKI5ZDiTciaJBHfFSaX0EO00RHEb701I
+Authorization: Token OKI5ZDiTciaJBHfFSaX0EO00RHEb701I
 
 ## Success response
 [{
@@ -77,4 +35,3 @@ Authorization: bearer OKI5ZDiTciaJBHfFSaX0EO00RHEb701I
  }]
 
 
-## this file can be execute using https://github.com/pashky/restclient.el
