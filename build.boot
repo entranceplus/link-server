@@ -1,7 +1,7 @@
 (def local-profile (-> "profiles.edn" slurp read-string))
 
 (set-env!
- :source-paths #{"src/clj" "src/cljc"}
+ :source-paths #{"src"}
  :resource-paths #{"resources"}
  ;; :clean-targets ^{:protect false} [:target-path :compile-path "out/public/out"]
  :repositories #(conj %
@@ -10,9 +10,11 @@
  :checkouts '[[org.danielsz/system "0.4.2-SNAPSHOT"]]
  :dependencies '[[clj-time "0.14.0"]
                  [snow "0.3.5"]
+                 [thheller/shadow-cljs "2.3.18"]
                  [cljs-ajax "0.7.2"]
                  [ring-middleware-format "0.7.2"]
                  [compojure "1.6.0"]
+                 [com.entranceplus/craw "0.0.1"]
                  [conman "0.6.8"]
                  [honeysql "0.9.1"]
                  [cprop "0.1.11"]

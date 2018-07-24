@@ -1,6 +1,7 @@
 (ns links.domain
   (:require [clojure.spec.alpha :as s]
-            [compojure.core :refer [routes GET POST]]
+            [compojure.core :refer [routes GET POST ANY]]
+            [clojure.java.io :as io]
             [links.db.core :as db]
             [links.util :as util]
             [ring.util.http-response :as response]
@@ -40,6 +41,18 @@
           (fn [req]
             (let [user-id (-> req :identity :_id)]
               (util/ok-response (db/get-links conn user-id))))))))
+
+(defn home-page []
+  (-> "home.html"
+     io/resource
+     slurp
+     response/ok
+     (response/header "Content-Type" "text/html")))
+
+(defn site [_]
+  (routes
+   (GET "/" [] (home-page))
+   (ANY "*" [] (home-page))))
 
 ;; (save-link {:id "asdasd"
 ;;             :url "http://dsfdfdsfs.com"

@@ -1,5 +1,10 @@
 (ns links.providers.reddit
-  (:require [snow.client :as client]))
+  (:require [snow.client :as client])
+  (:import [com.entranceplus.craw.crawler Reddit]))
+
+(def reddit-client (Reddit.))
+
+(-> reddit-client .getSubreddits)
 
 (def h {"User-Agent" "Mozilla/5.0 (Windows NT 6.1;) Gecko/20100101 Firefox/13.0.1"})
 

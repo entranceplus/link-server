@@ -1,0 +1,21 @@
+{:deps true
+ :nrepl {:port 55003}
+ :http {:port 9070
+        :host "0.0.0.0"}
+ :builds {:app {:target :browser
+                :output-dir "resources/public/js"
+                :asset-path "/js"
+                :dev {:compiler-options {:optimizations :none
+                                         :closure-defines      {"re_frame.trace.trace_enabled_QMARK_" true}
+                                         :preloads             [day8.re-frame-10x.preload]}}
+                :main voidwalker.source.app/main
+                :devtools   {:after-load   voidwalker.source.app/main
+                             :preloads     [devtools.preload
+                                            day8.re-frame-10x.preload]}
+                :modules
+                {:app
+                 {:entries [links.app]}}}
+          :test {:target :node-test
+                 :output-to "target/node-test.js"
+                 :ns-regexp "-test$"
+                 :autorun true}}}

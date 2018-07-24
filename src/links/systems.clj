@@ -1,11 +1,11 @@
 (ns links.systems
   (:require
    [com.stuartsierra.component :as component]
-   [links.domain :refer [link-routes]]
+   [links.domain :refer [link-routes site]]
    [environ.core :refer [env]]
    [system.core :refer [defsystem]]
    [ring.middleware.format :refer [wrap-restful-format]]
-   [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
+   [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
    [ring.logger :refer [wrap-with-logger]]
    [snow.systems :as system]
    [buddy.auth.middleware :refer (wrap-authentication wrap-authorization)]
@@ -36,6 +36,9 @@
    :links (component/using
            (new-endpoint link-routes)
            [:db])
+   :site-endpoint (component/using (new-endpoint site)
+                                   [:site-middleware])
+   :site-middleware (new-middleware {:middleware [[wrap-defaults site-defaults]]})
    :middleware (new-middleware
                 {:middleware  [rest-middleware
                                [wrap-defaults api-defaults]
@@ -44,7 +47,7 @@
                                wrap-with-logger]})
    :handler (component/using
              (new-handler)
-             [:links :middleware])
+             [:links :middleware :site-endpoint])
    :web (component/using
          (new-http-kit :port (system/get-port config :http-port))
          [:handler])])
