@@ -3,22 +3,41 @@
   <head>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.0/css/bulma.css" />
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
       <title>Welcome to links</title>
+
+      <style>
+	body {
+	margin: 0px;
+	padding: 0px;
+	}
+	
+	.app{
+	background: #374A67;
+	height: 100vh;
+	z-index: -1;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	}
+
+	.loading-after {
+	background: blue;
+	height: 100vh;
+	transform: translate3d(-60%, 0, 0);
+	transition: transform 0.8s  ease-in;
+	will-change: transform;
+	}
+      </style>
+      <style id="_stylefy-constant-styles_"></style>
+      <style id="_stylefy-styles_"></style>
   </head>
   <body>
-
-    <div id="app">
-      <div class="container-fluid">
-        <div class="card-deck">
-          <div class="card-block">
-            <h4>Welcome to links</h4>
-            <p> This is what you should see.
-          </div>
-        </div>
-      </div>
+    <div class="app"> </div>
+    <div id="root" >
+      <div id="loading"></div>
     </div>
 
     <!-- scripts and styles -->
@@ -28,6 +47,8 @@
     <!--     var context = "{{servlet-context}}"; -->
     <!--     var csrfToken = "{{csrf-token}}"; -->
     <!-- </script> -->
-    <script src="main.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.2.0/anime.min.js"></script>
+
+    <script src="/js/app.js"> </script>
   </body>
 </html>

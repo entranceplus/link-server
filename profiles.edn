@@ -1,0 +1,2 @@
+{:db-path "./links-store"
+ :http-port 9000}

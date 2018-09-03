@@ -9,11 +9,11 @@
 
 (def auth-url "https://aviana.herokuapp.com")
 
-(def res (c/post (str auth-url "/app/signup")
-                 :body {:email (-> (profile) :aviana-email)
-                        :password (-> (profile) :aviana-password)}))
+#_(def res (c/post (str auth-url "/app/signup")
+                   :body {:email (-> (profile) :aviana-email)
+                          :password (-> (profile) :aviana-password)}))
 
-(def api-key (-> res :body :api_key))
+#_(def api-key (-> res :body :api_key))
 
 (def user {:email "useremail@example.com"
            :password "pass"})
@@ -35,9 +35,13 @@
 #_(repl/start! sys/system-config)
 #_(repl/stop!)
 
+(defn cljs-repl []
+  (cemerick.piggieback/cljs-repl :app))
+
+
 (defn -main [& args]
   (println "Starting nrepl")
-  (repl/start-nrepl)
+  ;; (repl/start-nrepl)
   (println "Starting clj systems")
   (repl/start! sys/system-config)
   (server/start!)

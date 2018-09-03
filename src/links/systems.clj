@@ -11,6 +11,7 @@
    [buddy.auth.middleware :refer (wrap-authentication wrap-authorization)]
    [buddy.auth.backends :as backend]
    [snow.env :refer [profile]]
+   [re-frame.core :as rf]
    (system.components
     [jetty :refer [new-jetty new-web-server]]
     [postgres :refer [new-postgres-database]]

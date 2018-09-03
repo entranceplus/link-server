@@ -24,6 +24,7 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-flip-move": "^3.0.2",
-    "react-highlight.js": "^1.0.7"
+    "react-highlight.js": "^1.0.7",
+    "react-pose": "^2.2.0"
   }
 }
